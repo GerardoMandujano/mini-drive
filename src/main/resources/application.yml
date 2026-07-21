@@ -1,0 +1,14 @@
+server:
+  port: 8030
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+aws:
+  region: ${AWS_REGION:us-east-1}
+  endpoint: ${AWS_ENDPOINT:http://localhost:4566}
+
+  s3:
+    bucket: ${AWS_S3_BUCKET:gmr-drive}
