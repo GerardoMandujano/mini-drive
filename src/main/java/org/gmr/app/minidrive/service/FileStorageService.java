@@ -1,6 +1,7 @@
 package org.gmr.app.minidrive.service;
 
-import org.gmr.app.minidrive.dto.FileDonwload;
+import org.gmr.app.minidrive.dto.FileDownload;
+import org.gmr.app.minidrive.dto.FileDownload;
 import org.gmr.app.minidrive.dto.FileResponse;
 import org.gmr.app.minidrive.dto.FolderContentResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,10 +31,14 @@ public class FileStorageService {
 
     public String upload(MultipartFile file,String folder) throws IOException {
 
-        String fileName = file.getOriginalFilename();
+        String normalizedFolder = normalizeFolderName(folder);
 
-        String objectKey = folder.isBlank()
-                ? fileName: folder + "/" + fileName;
+        String fileName =
+                UUID.randomUUID() + "-" + file.getOriginalFilename();
+
+        String objectKey = normalizedFolder.isBlank()
+                ? fileName
+                : normalizedFolder + "/" + fileName;
 
 
         PutObjectRequest request = PutObjectRequest.builder()
@@ -70,18 +75,14 @@ public class FileStorageService {
                 .toList();
     }
 
-    public FileDonwload download(String key){
+    public byte[] download(String objectKey) {
+
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucket)
-                .key(key).build();
-        ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(request);
-        String contentType = response.response().contentType();
-        String fileName = extractOriginalFileName(key);
-        return  new FileDonwload(
-                response.asByteArray(),
-                contentType,
-                fileName
-        );
+                .key(objectKey)
+                .build();
+
+        return s3Client.getObjectAsBytes(request).asByteArray();
     }
 
     public FolderContentResponse listFolder(String folder) {
@@ -154,6 +155,28 @@ public class FileStorageService {
         }
 
         return normalized + "/";
+    }
+
+    public String normalizeFolderName(String folder) {
+
+        if (folder == null || folder.isBlank()) {
+            return "";
+        }
+
+        String normalized = folder.trim();
+
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+
+        while (normalized.endsWith("/")) {
+            normalized = normalized.substring(
+                    0,
+                    normalized.length() - 1
+            );
+        }
+
+        return normalized;
     }
 
     private String removeCurrentPrefix(

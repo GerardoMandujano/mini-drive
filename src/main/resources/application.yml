@@ -2,13 +2,14 @@ server:
   port: 8030
 
 spring:
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
+  mongodb:
+    uri: "mongodb://admin:admin123@localhost:27017/minidrive_db?authSource=admin"
 
 aws:
   region: ${AWS_REGION:us-east-1}
   endpoint: ${AWS_ENDPOINT:http://localhost:4566}
+  access-key: test
+  secret-key: test
 
   s3:
     bucket: ${AWS_S3_BUCKET:gmr-drive}
