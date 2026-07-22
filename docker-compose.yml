@@ -1,0 +1,84 @@
+services:
+
+  mongodb:
+    image: mongo:8.0
+    container_name: minidrive-mongodb
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongodb_data:/data/db
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "--username",
+          "admin",
+          "--password",
+          "admin123",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: minidrive-localstack
+    restart: unless-stopped
+
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: 0
+
+    ports:
+      - "4566:4566"
+
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+
+
+  minidrive-api:
+    image: minidrive-api:latest
+    container_name: minidrive-api
+    restart: unless-stopped
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+
+    ports:
+      - "8030:8030"
+
+    environment:
+      SERVER_PORT: 8030
+
+      MONGODB_URI: mongodb://admin:admin123@mongodb:27017/minidrive_db?authSource=admin
+
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT: http://localstack:4566
+      AWS_S3_BUCKET: gmr-drive
+
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+
+
+volumes:
+  mongodb_data:
+  localstack_data:
