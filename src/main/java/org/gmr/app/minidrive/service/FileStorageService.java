@@ -191,4 +191,14 @@ public class FileStorageService {
                 currentPrefix.length()
         );
     }
+
+    public void delete(String objectKey) {
+
+        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(objectKey)
+                .build();
+
+        s3Client.deleteObject(request);
+    }
 }

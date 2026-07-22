@@ -41,4 +41,7 @@ public class FileMetadataService {
                 FileStatus.ACTIVE
         );
     }
+    public void delete(FileMetadata metadata) {
+        repository.delete(metadata);
+    }
 }

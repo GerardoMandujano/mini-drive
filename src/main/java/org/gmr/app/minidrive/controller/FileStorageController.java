@@ -1,6 +1,8 @@
 package org.gmr.app.minidrive.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.gmr.app.minidrive.dto.*;
 import org.gmr.app.minidrive.service.FileService;
 import org.gmr.app.minidrive.service.FileStorageService;
@@ -43,7 +45,15 @@ public class FileStorageController {
 
 
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Subir archivos",
+            description = "Almacena el archivo de s3 y su ,etadata en Mongo"
+    )@ApiResponse(responseCode = "201",description = "Archivo subido correctamente")
+    @ApiResponse(responseCode = "400",description = "Archivo o datos invalidos")
+    @ApiResponse(
+            responseCode = "500",description = "Error durante el almacenamiento"
+    )
     public ResponseEntity<UploadResponse> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(
@@ -92,4 +102,15 @@ public class FileStorageController {
             return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String id
+    ) {
+
+        fileService.delete(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

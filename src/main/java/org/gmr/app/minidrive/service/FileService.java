@@ -69,6 +69,15 @@ public class FileService {
                 content
         );
     }
+
+    public void delete(String id) {
+
+        FileMetadata metadata = metadataService.findById(id);
+
+        storageService.delete(metadata.getObjectKey());
+
+        metadataService.delete(metadata);
+    }
 }
 
 
